@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luyện Tập Hằng Đẳng Thức</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        .pulse-correct {
+            animation: pulseCorrect 0.6s ease-in-out;
+        }
+        
+        .pulse-wrong {
+            animation: pulseWrong 0.6s ease-in-out;
+        }
+        
+        @keyframes pulseCorrect {
+            0% { transform: scale(1); background-color: rgb(34, 197, 94); }
+            50% { transform: scale(1.05); background-color: rgb(22, 163, 74); }
+            100% { transform: scale(1); background-color: rgb(34, 197, 94); }
+        }
+        
+        @keyframes pulseWrong {
+            0% { transform: scale(1); background-color: rgb(239, 68, 68); }
+            50% { transform: scale(1.05); background-color: rgb(220, 38, 38); }
+            100% { transform: scale(1); background-color: rgb(239, 68, 68); }
+        }
+        
+        .timer-warning {
+            animation: timerBlink 0.5s infinite;
+        }
+        
+        @keyframes timerBlink {
+            0%, 50% { color: rgb(239, 68, 68); }
+            51%, 100% { color: rgb(248, 113, 113); }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Màn hình chào mừng -->
+    <div id="welcomeScreen" class="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+        <div class="text-center p-8 bg-gray-800 rounded-2xl shadow-2xl border border-gray-700 max-w-md mx-4">
+            <h1 class="text-4xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+                🧮 Luyện Tập Hằng Đẳng Thức
+            </h1>
+            <p class="text-gray-300 mb-6 text-lg">
+                Thử thách kiến thức của bạn với 20 câu hỏi về hằng đẳng thức!
+            </p>
+            <div class="mb-6 text-left text-sm text-gray-400 space-y-2">
+                <p>📚 Bao gồm: Hiệu hai bình phương, Bình phương tổng & hiệu</p>
+                <p>⏱️ Thời gian: 30 giây/câu</p>
+                <p>🎯 Cấp độ: Nhận biết, Thông hiểu, Vận dụng</p>
+            </div>
+            <button onclick="startGame()" class="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 px-8 py-3 rounded-xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+                Bắt Đầu Chơi
+            </button>
+        </div>
+    </div>
+
+    <!-- Màn hình trò chơi -->
+    <div id="gameScreen" class="hidden min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 p-4">
+        <div class="max-w-4xl mx-auto">
+            <!-- Header -->
+            <div class="flex justify-between items-center mb-6 bg-gray-800 rounded-xl p-4 border border-gray-700">
+                <div class="text-lg font-semibold">
+                    Câu <span id="currentQuestion">1</span>/20
+                </div>
+                <div class="text-center">
+                    <div id="timer" class="text-3xl font-bold text-blue-400">30</div>
+                    <div class="text-sm text-gray-400">giây</div>
+                </div>
+                <div class="text-lg font-semibold">
+                    Điểm: <span id="score" class="text-green-400">0</span>
+                </div>
+            </div>
+
+            <!-- Câu hỏi -->
+            <div class="bg-gray-800 rounded-xl p-6 mb-6 border border-gray-700 shadow-xl">
+                <div class="text-center mb-4">
+                    <span id="questionType" class="inline-block bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-medium"></span>
+                </div>
+                <h2 id="questionText" class="text-2xl font-semibold text-center mb-6 text-white"></h2>
+                
+                <!-- Đáp án -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <button id="option0" class="option-btn bg-gray-700 hover:bg-gray-600 p-4 rounded-xl text-left transition-all duration-300 border border-gray-600 hover:border-purple-500" onclick="selectAnswer(0)">
+                        <span class="font-semibold text-purple-400">A.</span> <span class="ml-2"></span>
+                    </button>
+                    <button id="option1" class="option-btn bg-gray-700 hover:bg-gray-600 p-4 rounded-xl text-left transition-all duration-300 border border-gray-600 hover:border-purple-500" onclick="selectAnswer(1)">
+                        <span class="font-semibold text-blue-400">B.</span> <span class="ml-2"></span>
+                    </button>
+                    <button id="option2" class="option-btn bg-gray-700 hover:bg-gray-600 p-4 rounded-xl text-left transition-all duration-300 border border-gray-600 hover:border-purple-500" onclick="selectAnswer(2)">
+                        <span class="font-semibold text-green-400">C.</span> <span class="ml-2"></span>
+                    </button>
+                    <button id="option3" class="option-btn bg-gray-700 hover:bg-gray-600 p-4 rounded-xl text-left transition-all duration-300 border border-gray-600 hover:border-purple-500" onclick="selectAnswer(3)">
+                        <span class="font-semibold text-yellow-400">D.</span> <span class="ml-2"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Progress bar -->
+            <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
+                <div class="flex justify-between text-sm text-gray-400 mb-2">
+                    <span>Tiến độ</span>
+                    <span id="progressText">0%</span>
+                </div>
+                <div class="w-full bg-gray-700 rounded-full h-3">
+                    <div id="progressBar" class="bg-gradient-to-r from-purple-500 to-blue-500 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Màn hình kết quả -->
+    <div id="resultScreen" class="hidden flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 p-4">
+        <div class="text-center p-8 bg-gray-800 rounded-2xl shadow-2xl border border-gray-700 max-w-md mx-4">
+            <div id="resultIcon" class="text-6xl mb-4">🎉</div>
+            <h2 class="text-3xl font-bold mb-4 text-white">Hoàn Thành!</h2>
+            <div class="mb-6">
+                <div class="text-5xl font-bold text-green-400 mb-2" id="finalScore">0</div>
+                <div class="text-gray-300">câu đúng / 20 câu</div>
+                <div class="text-lg mt-2" id="percentage"></div>
+            </div>
+            <div id="resultMessage" class="text-lg mb-6 text-gray-300"></div>
+            <button onclick="restartGame()" class="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 px-8 py-3 rounded-xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+                Chơi Lại
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Dữ liệu câu hỏi
+        const questions = [
+            // Nhận biết - Hiệu hai bình phương
+            {
+                type: "Nhận biết",
+                question: "Hằng đẳng thức a² - b² bằng:",
+                options: ["(a - b)(a + b)", "(a + b)²", "(a - b)²", "a² + b²"],
+                correct: 0
+            },
+            {
+                type: "Nhận biết", 
+                question: "Biểu thức x² - 9 có thể phân tích thành:",
+                options: ["(x - 3)²", "(x - 3)(x + 3)", "(x + 3)²", "x² + 9"],
+                correct: 1
+            },
+            // Nhận biết - Bình phương tổng
+            {
+                type: "Nhận biết",
+                question: "Hằng đẳng thức (a + b)² bằng:",
+                options: ["a² + b²", "a² - 2ab + b²", "a² + 2ab + b²", "a² - b²"],
+                correct: 2
+            },
+            {
+                type: "Nhận biết",
+                question: "Khai triển (x + 3)² ta được:",
+                options: ["x² + 6x + 9", "x² - 6x + 9", "x² + 9", "x² + 3x + 9"],
+                correct: 0
+            },
+            // Nhận biết - Bình phương hiệu
+            {
+                type: "Nhận biết",
+                question: "Hằng đẳng thức (a - b)² bằng:",
+                options: ["a² + 2ab + b²", "a² - 2ab + b²", "a² - b²", "a² + b²"],
+                correct: 1
+            },
+            {
+                type: "Nhận biết",
+                question: "Khai triển (x - 5)² ta được:",
+                options: ["x² - 10x + 25", "x² + 10x + 25", "x² - 25", "x² - 5x + 25"],
+                correct: 0
+            },
+            // Thông hiểu - Hiệu hai bình phương
+            {
+                type: "Thông hiểu",
+                question: "Phân tích 4x² - 25 thành nhân tử:",
+                options: ["(2x - 5)(2x + 5)", "(4x - 5)(x + 5)", "(2x - 5)²", "(x - 5)(4x + 5)"],
+                correct: 0
+            },
+            {
+                type: "Thông hiểu",
+                question: "Biểu thức 9a² - 16b² bằng:",
+                options: ["(3a - 4b)²", "(9a - 16b)(a + b)", "(3a - 4b)(3a + 4b)", "(3a + 4b)²"],
+                correct: 2
+            },
+            // Thông hiểu - Bình phương tổng
+            {
+                type: "Thông hiểu",
+                question: "Nếu (x + y)² = x² + 6xy + y², thì xy bằng:",
+                options: ["3", "6", "2", "1"],
+                correct: 0
+            },
+            {
+                type: "Thông hiểu",
+                question: "Khai triển (2a + 3b)²:",
+                options: ["4a² + 12ab + 9b²", "4a² + 6ab + 9b²", "2a² + 6ab + 3b²", "4a² + 9b²"],
+                correct: 0
+            },
+            // Thông hiểu - Bình phương hiệu
+            {
+                type: "Thông hiểu",
+                question: "Biểu thức x² - 8x + 16 có thể viết thành:",
+                options: ["(x - 4)²", "(x + 4)²", "(x - 8)²", "(x - 2)²"],
+                correct: 0
+            },
+            {
+                type: "Thông hiểu",
+                question: "Khai triển (3x - 2y)²:",
+                options: ["9x² - 6xy + 4y²", "9x² - 12xy + 4y²", "3x² - 4xy + 2y²", "9x² + 12xy + 4y²"],
+                correct: 1
+            },
+            // Vận dụng - Hiệu hai bình phương
+            {
+                type: "Vận dụng",
+                question: "Tính nhanh 97² - 3²:",
+                options: ["9400", "9409", "9391", "9000"],
+                correct: 0
+            },
+            {
+                type: "Vận dụng",
+                question: "Nếu a² - b² = 15 và a + b = 5, thì a - b bằng:",
+                options: ["3", "10", "5", "15"],
+                correct: 0
+            },
+            // Vận dụng - Bình phương tổng
+            {
+                type: "Vận dụng",
+                question: "Tính nhanh 103²:",
+                options: ["10609", "10600", "10909", "10309"],
+                correct: 0
+            },
+            {
+                type: "Vận dụng",
+                question: "Nếu (x + 2)² = x² + 4x + 4, thì giá trị của x là:",
+                options: ["Mọi số thực", "2", "0", "-2"],
+                correct: 0
+            },
+            // Vận dụng - Bình phương hiệu
+            {
+                type: "Vận dụng",
+                question: "Tính nhanh 98²:",
+                options: ["9604", "9600", "9804", "9404"],
+                correct: 0
+            },
+            {
+                type: "Vận dụng",
+                question: "Nếu x² - 6x + 9 = 0, thì x bằng:",
+                options: ["3", "-3", "6", "9"],
+                correct: 0
+            },
+            // Vận dụng cao - Kết hợp
+            {
+                type: "Vận dụng",
+                question: "Rút gọn (x + y)² - (x - y)²:",
+                options: ["4xy", "2x²", "2y²", "0"],
+                correct: 0
+            },
+            {
+                type: "Vận dụng",
+                question: "Nếu a + b = 7 và ab = 12, thì a² + b² bằng:",
+                options: ["25", "49", "37", "61"],
+                correct: 0
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let timeLeft = 30;
+        let timer;
+        let gameQuestions = [];
+        let answered = false;
+
+        // Âm thanh (sử dụng Web Audio API)
+        function playSound(frequency, duration, type = 'sine') {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = frequency;
+            oscillator.type = type;
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration);
+        }
+
+        function playCorrectSound() {
+            playSound(800, 0.2);
+            setTimeout(() => playSound(1000, 0.3), 100);
+        }
+
+        function playWrongSound() {
+            playSound(300, 0.5, 'sawtooth');
+        }
+
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        function startGame() {
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+            
+            // Trộn câu hỏi
+            gameQuestions = shuffleArray(questions);
+            currentQuestionIndex = 0;
+            score = 0;
+            
+            showQuestion();
+            startTimer();
+        }
+
+        function showQuestion() {
+            answered = false;
+            const question = gameQuestions[currentQuestionIndex];
+            
+            document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
+            document.getElementById('questionType').textContent = question.type;
+            document.getElementById('questionText').textContent = question.question;
+            
+            // Trộn đáp án
+            const shuffledOptions = [...question.options];
+            const correctAnswer = shuffledOptions[question.correct];
+            
+            // Shuffle options
+            for (let i = shuffledOptions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledOptions[i], shuffledOptions[j]] = [shuffledOptions[j], shuffledOptions[i]];
+            }
+            
+            // Tìm vị trí mới của đáp án đúng
+            const newCorrectIndex = shuffledOptions.indexOf(correctAnswer);
+            gameQuestions[currentQuestionIndex].shuffledCorrect = newCorrectIndex;
+            
+            // Hiển thị đáp án
+            for (let i = 0; i < 4; i++) {
+                const optionBtn = document.getElementById(`option${i}`);
+                optionBtn.querySelector('span:last-child').textContent = shuffledOptions[i];
+                optionBtn.className = "option-btn bg-gray-700 hover:bg-gray-600 p-4 rounded-xl text-left transition-all duration-300 border border-gray-600 hover:border-purple-500";
+                optionBtn.disabled = false;
+            }
+            
+            // Reset timer
+            timeLeft = 30;
+            updateTimer();
+        }
+
+        function startTimer() {
+            timer = setInterval(() => {
+                timeLeft--;
+                updateTimer();
+                
+                if (timeLeft <= 0) {
+                    timeUp();
+                }
+            }, 1000);
+        }
+
+        function updateTimer() {
+            const timerElement = document.getElementById('timer');
+            timerElement.textContent = timeLeft;
+            
+            if (timeLeft <= 10) {
+                timerElement.classList.add('timer-warning');
+            } else {
+                timerElement.classList.remove('timer-warning');
+            }
+        }
+
+        function selectAnswer(selectedIndex) {
+            if (answered) return;
+            
+            answered = true;
+            clearInterval(timer);
+            
+            const question = gameQuestions[currentQuestionIndex];
+            const isCorrect = selectedIndex === question.shuffledCorrect;
+            
+            // Hiển thị kết quả
+            for (let i = 0; i < 4; i++) {
+                const optionBtn = document.getElementById(`option${i}`);
+                optionBtn.disabled = true;
+                
+                if (i === question.shuffledCorrect) {
+                    optionBtn.className = "option-btn bg-green-600 p-4 rounded-xl text-left border border-green-500 pulse-correct";
+                } else if (i === selectedIndex && !isCorrect) {
+                    optionBtn.className = "option-btn bg-red-600 p-4 rounded-xl text-left border border-red-500 pulse-wrong";
+                } else {
+                    optionBtn.className = "option-btn bg-gray-600 p-4 rounded-xl text-left border border-gray-500";
+                }
+            }
+            
+            if (isCorrect) {
+                score++;
+                playCorrectSound();
+                document.getElementById('score').textContent = score;
+            } else {
+                playWrongSound();
+            }
+            
+            // Cập nhật progress
+            const progress = ((currentQuestionIndex + 1) / 20) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('progressText').textContent = Math.round(progress) + '%';
+            
+            // Chuyển câu tiếp theo sau 2 giây
+            setTimeout(() => {
+                currentQuestionIndex++;
+                if (currentQuestionIndex < 20) {
+                    showQuestion();
+                    startTimer();
+                } else {
+                    showResult();
+                }
+            }, 2000);
+        }
+
+        function timeUp() {
+            if (answered) return;
+            
+            answered = true;
+            clearInterval(timer);
+            
+            const question = gameQuestions[currentQuestionIndex];
+            
+            // Hiển thị đáp án đúng
+            for (let i = 0; i < 4; i++) {
+                const optionBtn = document.getElementById(`option${i}`);
+                optionBtn.disabled = true;
+                
+                if (i === question.shuffledCorrect) {
+                    optionBtn.className = "option-btn bg-green-600 p-4 rounded-xl text-left border border-green-500";
+                } else {
+                    optionBtn.className = "option-btn bg-gray-600 p-4 rounded-xl text-left border border-gray-500";
+                }
+            }
+            
+            playWrongSound();
+            
+            // Cập nhật progress
+            const progress = ((currentQuestionIndex + 1) / 20) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('progressText').textContent = Math.round(progress) + '%';
+            
+            setTimeout(() => {
+                currentQuestionIndex++;
+                if (currentQuestionIndex < 20) {
+                    showQuestion();
+                    startTimer();
+                } else {
+                    showResult();
+                }
+            }, 2000);
+        }
+
+        function showResult() {
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.remove('hidden');
+            
+            const percentage = (score / 20) * 100;
+            
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('percentage').textContent = `${percentage.toFixed(1)}%`;
+            
+            let message, icon;
+            if (percentage >= 90) {
+                message = "Xuất sắc! Bạn đã thành thạo hằng đẳng thức!";
+                icon = "🏆";
+            } else if (percentage >= 80) {
+                message = "Rất tốt! Bạn đã nắm vững kiến thức!";
+                icon = "🎉";
+            } else if (percentage >= 70) {
+                message = "Khá tốt! Hãy luyện tập thêm nhé!";
+                icon = "👍";
+            } else if (percentage >= 60) {
+                message = "Cần cố gắng thêm! Đừng bỏ cuộc!";
+                icon = "💪";
+            } else {
+                message = "Hãy ôn lại lý thuyết và thử lại nhé!";
+                icon = "📚";
+            }
+            
+            document.getElementById('resultMessage').textContent = message;
+            document.getElementById('resultIcon').textContent = icon;
+        }
+
+        function restartGame() {
+            document.getElementById('resultScreen').classList.add('hidden');
+            document.getElementById('welcomeScreen').classList.remove('hidden');
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96aac5fbf6fc5dcf',t:'MTc1NDQ0Mzg3Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
